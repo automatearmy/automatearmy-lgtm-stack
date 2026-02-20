@@ -48,10 +48,10 @@ services:
   gcs-credentials-setup:
     image: alpine:latest
     command: >
-      sh -c "printf '%b' \"$GCS_SERVICE_ACCOUNT\" > /credentials/gcs.json && tail -f /dev/null"
+      sh -c "echo $GCS_SERVICE_ACCOUNT_B64 | base64 -d > /credentials/gcs.json && tail -f /dev/null"
     restart: unless-stopped
     environment:
-      - "GCS_SERVICE_ACCOUNT=${GCS_SERVICE_ACCOUNT}"
+      - "GCS_SERVICE_ACCOUNT_B64=${GCS_SERVICE_ACCOUNT_B64}"
     volumes:
       - "credentials:/credentials"
     healthcheck:
