@@ -48,11 +48,17 @@ services:
   gcs-credentials-setup:
     image: alpine:latest
     command: >
-      sh -c "echo \"$$GCS_SERVICE_ACCOUNT\" > /credentials/gcs.json"
+      sh -c "echo \"$$GCS_SERVICE_ACCOUNT\" > /credentials/gcs.json && tail -f /dev/null"
+    restart: unless-stopped
     environment:
       - "GCS_SERVICE_ACCOUNT=${GCS_SERVICE_ACCOUNT}"
     volumes:
       - "credentials:/credentials"
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /credentials/gcs.json"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
 
   # Loki configuration
   loki:
@@ -69,7 +75,7 @@ services:
       - "credentials:/credentials:ro"
     depends_on:
       gcs-credentials-setup:
-        condition: service_completed_successfully
+        condition: service_healthy
     healthcheck:
       test:
         - CMD-SHELL
@@ -93,7 +99,7 @@ services:
       - "credentials:/credentials:ro"
     depends_on:
       gcs-credentials-setup:
-        condition: service_completed_successfully
+        condition: service_healthy
 
   # Grafana Alloy configuration
   alloy:
