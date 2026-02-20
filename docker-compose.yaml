@@ -48,6 +48,9 @@ services:
     command:
       - "-config.file=/etc/grafana/loki/loki-config.yaml"
       - "-config.expand-env=true"
+    environment:
+      - "GCS_BUCKET_NAME=${GCS_BUCKET_NAME}"
+      - "GCS_SERVICE_ACCOUNT=${GCS_SERVICE_ACCOUNT}"
     volumes:
       - "./config/loki:/etc/grafana/loki"
       - "loki-data:/loki"
@@ -65,6 +68,9 @@ services:
     command:
       - "-config.file=/etc/tempo/tempo.yaml"
       - "-config.expand-env=true"
+    environment:
+      - "GCS_BUCKET_NAME=${GCS_BUCKET_NAME}"
+      - "GCS_SERVICE_ACCOUNT=${GCS_SERVICE_ACCOUNT}"
     volumes:
       - "./config/tempo:/etc/tempo"
       - "tempo-data:/var/tempo"
