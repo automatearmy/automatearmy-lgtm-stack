@@ -14,11 +14,6 @@ It includes services for log aggregation, metrics, traces, and visualization, wi
 *   **Alloy:** The collector that receives OpenTelemetry data (logs, metrics, traces) and forwards it to the appropriate backend service.
 *   **PostgreSQL:** The database backend for Grafana.
 
-### Monitoring Services
-*   **cAdvisor:** Collects detailed container metrics from the host.
-*   **Node Exporter:** Collects system-level metrics from the host.
-*   **Nginx:** A reverse proxy used internally.
-
 ## Setup Instructions
 
 1.  **Clone the Repository:**
@@ -48,11 +43,4 @@ It includes services for log aggregation, metrics, traces, and visualization, wi
 ## Endpoints
 
 *   **Grafana Dashboard:** `https://your-grafana-domain.com` (as defined in `.env`)
-*   **Prometheus UI:** `http://<your-server-ip>:9090`
-*   **cAdvisor UI:** `http://<your-server-ip>:8081`
 *   **Alloy OTLP Ingestion Endpoint:** `https://your-alloy-domain.com` (as defined in `.env`)
-    *   **Logs:** `/v1/logs`
-    *   **Metrics:** `/v1/metrics`
-    *   **Traces:** `/v1/traces`
-
-    *Note: The Alloy endpoint is protected by basic authentication.*
