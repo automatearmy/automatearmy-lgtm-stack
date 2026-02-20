@@ -48,7 +48,7 @@ services:
   gcs-credentials-setup:
     image: alpine:latest
     command: >
-      sh -c "echo \"$$GCS_SERVICE_ACCOUNT\" > /credentials/gcs.json && tail -f /dev/null"
+      sh -c "printenv GCS_SERVICE_ACCOUNT > /credentials/gcs.json && tail -f /dev/null"
     restart: unless-stopped
     environment:
       - "GCS_SERVICE_ACCOUNT=${GCS_SERVICE_ACCOUNT}"
