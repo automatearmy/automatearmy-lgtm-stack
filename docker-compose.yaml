@@ -42,6 +42,18 @@ services:
       timeout: 20s
       retries: 10
 
+  # GCS Credentials Setup
+  # This service runs once to write the GCS service account JSON from an environment
+  # variable to a file in a shared volume, so Loki and Tempo can authenticate.
+  gcs-credentials-setup:
+    image: alpine:latest
+    command: >
+      sh -c "echo \"$$GCS_SERVICE_ACCOUNT\" > /credentials/gcs.json"
+    environment:
+      - "GCS_SERVICE_ACCOUNT=${GCS_SERVICE_ACCOUNT}"
+    volumes:
+      - "credentials:/credentials"
+
   # Loki configuration
   loki:
     image: "grafana/loki:latest"
@@ -50,10 +62,14 @@ services:
       - "-config.expand-env=true"
     environment:
       - "GCS_BUCKET_NAME=${GCS_BUCKET_NAME}"
-      - "GCS_SERVICE_ACCOUNT=${GCS_SERVICE_ACCOUNT}"
+      - "GOOGLE_APPLICATION_CREDENTIALS=/credentials/gcs.json"
     volumes:
       - "./config/loki:/etc/grafana/loki"
       - "loki-data:/loki"
+      - "credentials:/credentials:ro"
+    depends_on:
+      gcs-credentials-setup:
+        condition: service_completed_successfully
     healthcheck:
       test:
         - CMD-SHELL
@@ -70,10 +86,14 @@ services:
       - "-config.expand-env=true"
     environment:
       - "GCS_BUCKET_NAME=${GCS_BUCKET_NAME}"
-      - "GCS_SERVICE_ACCOUNT=${GCS_SERVICE_ACCOUNT}"
+      - "GOOGLE_APPLICATION_CREDENTIALS=/credentials/gcs.json"
     volumes:
       - "./config/tempo:/etc/tempo"
       - "tempo-data:/var/tempo"
+      - "credentials:/credentials:ro"
+    depends_on:
+      gcs-credentials-setup:
+        condition: service_completed_successfully
 
   # Grafana Alloy configuration
   alloy:
@@ -100,7 +120,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - "./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
+      - "./config/prometheus:/etc/prometheus:ro"
       - "prometheus-data:/prometheus"
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
@@ -123,3 +143,4 @@ volumes:
   loki-data:
   tempo-data:
   prometheus-data:
+  credentials:

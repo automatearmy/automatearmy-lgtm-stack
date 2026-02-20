@@ -53,9 +53,6 @@ storage_config:
     # GCS bucket where logs and indexes are stored
     bucket_name: '${GCS_BUCKET_NAME}'
 
-    # Service account JSON used to access GCS
-    service_account: '${GCS_SERVICE_ACCOUNT}'
-
 ingester:
   # Flush a chunk if no new logs arrive for this duration
   chunk_idle_period: 5m
@@ -77,6 +74,9 @@ compactor:
 
   # Enable retention enforcement (required for retention_period to work)
   retention_enabled: true
+
+  # Configure the store for retention delete requests
+  delete_request_store: gcs
 
 query_range:
   results_cache:
