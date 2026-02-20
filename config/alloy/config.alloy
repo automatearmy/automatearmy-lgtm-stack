@@ -1,0 +1,73 @@
+// ====================================================================
+// RECEIVER
+// ====================================================================
+// This component receives OTLP data via gRPC and HTTP.
+// It forwards all received data to the batch processor.
+otelcol.receiver.otlp "default" {
+  grpc {}
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+
+  output {
+    metrics = [otelcol.processor.batch.default.input]
+    logs    = [otelcol.processor.batch.default.input]
+    traces  = [otelcol.processor.batch.default.input]
+  }
+}
+
+// ====================================================================
+// PROCESSOR
+// ====================================================================
+// This component batches data to improve efficiency.
+// It fans out the batched data to the appropriate exporters.
+otelcol.processor.batch "default" {
+  output {
+    metrics = [otelcol.exporter.prometheus.default.input]
+    logs    = [otelcol.exporter.loki.default.input]
+    traces  = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+// ====================================================================
+// EXPORTERS (Format Translators)
+// ====================================================================
+// This exporter translates OTLP metrics to the Prometheus format
+// and forwards them to the prometheus.remote_write component.
+otelcol.exporter.prometheus "default" {
+  forward_to = [prometheus.remote_write.default.receiver]
+}
+
+// This exporter translates OTLP logs to the Loki format
+// and forwards them to the loki.write component.
+otelcol.exporter.loki "default" {
+  forward_to = [loki.write.default.receiver]
+}
+
+// This exporter forwards OTLP traces directly to Tempo,
+// which understands OTLP natively.
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "tempo:4317"
+    tls {
+      insecure = true
+    }
+  }
+}
+
+// ====================================================================
+// WRITERS (Final Destinations)
+// ====================================================================
+// This component sends the translated metrics to Prometheus.
+prometheus.remote_write "default" {
+  endpoint {
+    url = "http://prometheus:9090/api/v1/write"
+  }
+}
+
+// This component sends the translated logs to Loki.
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

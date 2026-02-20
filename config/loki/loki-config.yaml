@@ -1,0 +1,93 @@
+# Disable authentication and multi-tenancy
+auth_enabled: false
+
+server:
+  # HTTP API for log ingestion and queries (Grafana, Alloy)
+  http_listen_port: 3100
+
+  # gRPC port used internally by Loki components
+  grpc_listen_port: 9096
+
+common:
+  # Base directory for Loki local files (indexes, cache, compactor data)
+  path_prefix: /loki
+
+  # Single replica only
+  replication_factor: 1
+
+  ring:
+    kvstore:
+      # Ring state stored in memory
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: 2024-01-01
+
+      # Use TSDB-based storage
+      store: tsdb
+
+      # Store chunks and indexes in Google Cloud Storage
+      object_store: gcs
+      schema: v13
+
+      index:
+        # Prefix used for index objects in GCS
+        prefix: index_
+
+        # Create one index per day
+        period: 24h
+
+storage_config:
+  tsdb_shipper:
+    # Local directory where active TSDB indexes are written
+    active_index_directory: /loki/index
+
+    # Local cache for downloaded index files
+    cache_location: /loki/cache
+
+    # How long index files stay cached locally
+    cache_ttl: 24h
+
+  gcs:
+    # GCS bucket where logs and indexes are stored
+    bucket_name: '${GCS_BUCKET_NAME}'
+
+    # Service account JSON used to access GCS
+    service_account: '${GCS_SERVICE_ACCOUNT}'
+
+ingester:
+  # Flush a chunk if no new logs arrive for this duration
+  chunk_idle_period: 5m
+
+  # Keep flushed chunks in memory briefly for late-arriving logs
+  chunk_retain_period: 30s
+
+  # Force flush chunks after this time even if still active
+  max_chunk_age: 1h
+
+limits_config:
+  # Retain logs for 120 days
+  # Older logs will be deleted by the compactor
+  retention_period: 120d
+
+compactor:
+  # Local working directory for compaction and retention deletes
+  working_directory: /loki/compactor
+
+  # Enable retention enforcement (required for retention_period to work)
+  retention_enabled: true
+
+query_range:
+  results_cache:
+    cache:
+      embedded_cache:
+        # Cache query results in memory for faster dashboards
+        enabled: true
+
+        # Maximum cache size
+        max_size_mb: 100
+
+analytics:
+  # Disable anonymous usage reporting to Grafana Labs
+  reporting_enabled: false

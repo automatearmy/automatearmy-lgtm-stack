@@ -1,0 +1,7 @@
+# Environment variables
+# Contains secrets and should not be committed.
+.env
+
+# Common OS-specific files
+.DS_Store
+Thumbs.db

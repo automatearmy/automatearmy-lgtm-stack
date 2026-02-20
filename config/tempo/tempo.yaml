@@ -1,0 +1,46 @@
+# HTTP server used by Grafana to query traces
+server:
+  http_listen_port: 3200
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        # OTLP gRPC receiver (used by Alloy → Tempo)
+        grpc:
+
+        # OTLP HTTP receiver (optional)
+        http:
+
+ingester:
+  # Time to wait before considering a trace complete
+  # After this, the trace is flushed to storage
+  trace_idle_period: 10s
+
+compactor:
+  compaction:
+    # Time window used to compact small trace blocks
+    compaction_window: 1h
+
+    # How long trace blocks are retained
+    block_retention: 24h
+
+storage:
+  trace:
+    # Use Google Cloud Storage for trace storage
+    backend: gcs
+
+    gcs:
+      # GCS bucket where trace blocks are stored
+      bucket_name: '${GCS_BUCKET_NAME}'
+
+      # Service account JSON used to access GCS
+      service_account: '${GCS_SERVICE_ACCOUNT}'
+
+    wal:
+      # Write-ahead log for crash recovery
+      path: /var/tempo/wal
+
+    local:
+      # Local directory used as a temporary block cache
+      path: /var/tempo/blocks
