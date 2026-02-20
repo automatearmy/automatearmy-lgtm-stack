@@ -62,7 +62,8 @@ services:
 
   # Loki configuration
   loki:
-    image: "grafana/loki:latest"
+    build:
+      context: ./config/loki
     command:
       - "-config.file=/etc/grafana/loki/loki-config.yaml"
       - "-config.expand-env=true"
@@ -70,7 +71,6 @@ services:
       - "GCS_BUCKET_NAME=${GCS_BUCKET_NAME}"
       - "GOOGLE_APPLICATION_CREDENTIALS=/credentials/gcs.json"
     volumes:
-      - "./config/loki:/etc/grafana/loki"
       - "loki-data:/loki"
       - "credentials:/credentials:ro"
     depends_on:
@@ -86,7 +86,8 @@ services:
 
   # Tempo configuration
   tempo:
-    image: "grafana/tempo:latest"
+    build:
+      context: ./config/tempo
     command:
       - "-config.file=/etc/tempo/tempo.yaml"
       - "-config.expand-env=true"
@@ -94,7 +95,6 @@ services:
       - "GCS_BUCKET_NAME=${GCS_BUCKET_NAME}"
       - "GOOGLE_APPLICATION_CREDENTIALS=/credentials/gcs.json"
     volumes:
-      - "./config/tempo:/etc/tempo"
       - "tempo-data:/var/tempo"
       - "credentials:/credentials:ro"
     depends_on:
@@ -103,7 +103,8 @@ services:
 
   # Grafana Alloy configuration
   alloy:
-    image: "grafana/alloy:latest"
+    build:
+      context: ./config/alloy
     command:
       - run
       - /etc/alloy/config.alloy
@@ -112,19 +113,17 @@ services:
     labels:
       - traefik.http.middlewares.alloy-auth.basicauth.users=${ALLOY_BASIC_AUTH}
       - traefik.http.routers.https-alloy-4318.middlewares=alloy-auth
-    volumes:
-      - "./config/alloy:/etc/alloy"
     depends_on:
       - loki
       - tempo
 
   # Prometheus configuration
   prometheus:
-    image: "prom/prometheus:latest"
+    build:
+      context: ./config/prometheus
     container_name: prometheus
     restart: unless-stopped
     volumes:
-      - "./config/prometheus:/etc/prometheus:ro"
       - "prometheus-data:/prometheus"
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
@@ -141,6 +140,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+
 volumes:
   grafana-data:
   postgresql-data:
