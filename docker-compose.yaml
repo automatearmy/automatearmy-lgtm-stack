@@ -11,6 +11,8 @@ services:
       - "GF_DATABASE_USER=${SERVICE_USER_POSTGRES}"
       - "GF_DATABASE_PASSWORD=${SERVICE_PASSWORD_POSTGRES}"
       - "GF_DATABASE_NAME=${POSTGRES_DB:-grafana}"
+    ports:
+      - "3500:3000"
     volumes:
       - "grafana-data:/var/lib/grafana"
     healthcheck:
@@ -23,7 +25,8 @@ services:
       timeout: 20s
       retries: 10
     depends_on:
-      - postgresql
+      postgresql:
+        condition: service_healthy
 
   # PostgreSQL configuration
   postgresql:
@@ -70,6 +73,8 @@ services:
     environment:
       - "GCS_BUCKET_NAME=${GCS_BUCKET_NAME}"
       - "GOOGLE_APPLICATION_CREDENTIALS=/credentials/gcs.json"
+    ports:
+      - "3100:3100"
     volumes:
       - "loki-data:/loki"
       - "credentials:/credentials:ro"
@@ -92,6 +97,8 @@ services:
     environment:
       - "GCS_BUCKET_NAME=${GCS_BUCKET_NAME}"
       - "GOOGLE_APPLICATION_CREDENTIALS=/credentials/gcs.json"
+    ports:
+      - "3200:3200"
     volumes:
       - "tempo-data:/var/tempo"
       - "credentials:/credentials:ro"
@@ -110,9 +117,14 @@ services:
       context: ./config/alloy
     command:
       - run
+      - --server.http.listen-addr=0.0.0.0:12345
       - /etc/alloy/config.alloy
     environment:
       - SERVICE_FQDN_ALLOY_4318
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "12345:12345"
     labels:
       - traefik.http.middlewares.alloy-auth.basicauth.users=${ALLOY_BASIC_AUTH}
       - traefik.http.routers.https-alloy-4318.middlewares=alloy-auth
@@ -133,6 +145,8 @@ services:
       context: ./config/prometheus
     container_name: prometheus
     restart: unless-stopped
+    ports:
+      - "9090:9090"
     volumes:
       - "prometheus-data:/prometheus"
     command:
