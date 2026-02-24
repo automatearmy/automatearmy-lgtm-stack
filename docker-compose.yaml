@@ -4,7 +4,6 @@ services:
   grafana:
     image: grafana/grafana-oss
     environment:
-      - SERVICE_FQDN_GRAFANA_3000
       - "GF_SECURITY_ADMIN_PASSWORD=${SERVICE_PASSWORD_GRAFANA}"
       - GF_DATABASE_TYPE=postgres
       - GF_DATABASE_HOST=postgresql
@@ -119,8 +118,6 @@ services:
       - run
       - --server.http.listen-addr=0.0.0.0:12345
       - /etc/alloy/config.alloy
-    environment:
-      - SERVICE_FQDN_ALLOY_4318
     ports:
       - "4317:4317"
       - "4318:4318"
