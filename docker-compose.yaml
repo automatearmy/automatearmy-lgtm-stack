@@ -77,6 +77,8 @@ services:
     volumes:
       - "loki-data:/loki"
       - "credentials:/credentials:ro"
+    labels:
+      - 'traefik.http.middlewares.lokiauth.basicauth.users=${LOKI_BASIC_AUTH}'
     depends_on:
       gcs-credentials-setup:
         condition: service_healthy
@@ -120,6 +122,8 @@ services:
       - /etc/alloy/config.alloy
     ports:
       - "4318:4318"
+    labels:
+      - 'traefik.http.middlewares.alloyauth.basicauth.users=${ALLOY_BASIC_AUTH}'
     depends_on:
       - loki
       - tempo
@@ -141,6 +145,8 @@ services:
       - "9090:9090"
     volumes:
       - "prometheus-data:/prometheus"
+    labels:
+      - 'traefik.http.middlewares.prometheusauth.basicauth.users=${PROMETHEUS_BASIC_AUTH}'
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--web.enable-remote-write-receiver" # Enable prometheus receiver for remote write
