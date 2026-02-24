@@ -78,7 +78,7 @@ services:
       - "loki-data:/loki"
       - "credentials:/credentials:ro"
     labels:
-      - 'traefik.http.middlewares.lokiauth.basicauth.users=admin:$2y$05$ntxGlRLvNbz26Nfx42U30up0tanW3TrsRDmqjwyhGu93EU41B5ERi'
+      - 'traefik.http.middlewares.lokiauth.basicauth.users=zzimbler:$2y$05$9EDhKU/khjTe3jK76bw2MOCS61UsMrrOQezvB4nbCx57crxS90Yyq'
     depends_on:
       gcs-credentials-setup:
         condition: service_healthy
